@@ -1,6 +1,6 @@
 --// ESP Framework made by @publicmain, github.com/pubmain, just added shit
 --// Why not open source?, don't want my script with 5k lines xd
---//Please credit if using - astral v3st
+--//Please credit if using - v3st
 
 if not IB_OBFUSCATED then
     getfenv().IB_NO_VIRTUALIZE = function(...) return ... end
@@ -453,7 +453,9 @@ function esp:ImplementCharacterClass()
                 boxBorder.Thickness    = 3
                 boxBorder.LineJoinMode = Enum.LineJoinMode.Miter
                 boxBorder.ZIndex       = 1
-                boxBorder.BorderOffset = UDim.new(0, -1)
+                pcall(function()
+                    boxBorder.BorderOffset = UDim.new(0, -1)
+                end)
             end
 
             local cornerFrames = {}
@@ -699,7 +701,9 @@ function esp:ImplementCharacterClass()
                     obj.boxBorder.Name = "border"
                     obj.boxBorder.LineJoinMode = Enum.LineJoinMode.Miter
                     obj.boxBorder.ZIndex = 1
-                    obj.boxBorder.BorderOffset = UDim.new(0, -1)
+                    pcall(function()
+                        obj.boxBorder.BorderOffset = UDim.new(0, -1)
+                    end)
                     obj.boxBorder.Color = Color3.new(0, 0, 0)
                     obj.boxBorder.Thickness = 3
                 end
