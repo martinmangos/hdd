@@ -1,6 +1,6 @@
 --// ESP Framework made by @publicmain, github.com/pubmain, just added shit
 --// Why not open source?, don't want my script with 5k lines xd
---//Please credit if using - astral
+--//Please credit if using - astral v3st
 
 if not IB_OBFUSCATED then
     getfenv().IB_NO_VIRTUALIZE = function(...) return ... end
@@ -653,6 +653,106 @@ function esp:ImplementCharacterClass()
             obj.holder.Visible  = true
             obj.holder.Position = UDim2.new(0, position.X, 0, position.Y)
             obj.holder.Size     = UDim2.new(0, size.X, 0, size.Y)
+
+            if fillCfg.Enabled and not obj.boxGradient then
+                obj.boxGradient = Instance.new("UIGradient", obj.box)
+            end
+            if fillCfg.Enabled and obj.boxGradient then
+                if fillCfg.Gradient and fillCfg.Gradient.Enabled then
+                    obj.box.BackgroundColor3 = Color3.new(1, 1, 1)
+                    local seq = {}
+                    local colors = fillCfg.Gradient.Color or {Color3.new(1, 1, 1), Color3.new(1, 1, 1)}
+                    for i, c in ipairs(colors) do
+                        table.insert(seq, ColorSequenceKeypoint.new((i - 1) / math.max(#colors - 1, 1), c))
+                    end
+                    obj.boxGradient.Color = ColorSequence.new(seq)
+                    obj.boxGradient.Rotation = fillCfg.Gradient.Rotation or -90
+                else
+                    obj.box.BackgroundColor3 = fillCfg.Color or Color3.new(1, 1, 1)
+                    obj.boxGradient.Color = ColorSequence.new(obj.box.BackgroundColor3)
+                    obj.boxGradient.Rotation = 0
+                end
+
+                local tr = fillCfg.Transparency
+                if type(tr) == "table" then
+                    obj.boxGradient.Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0, tr[1] or 0.3),
+                        NumberSequenceKeypoint.new(1, tr[2] or 0.8),
+                    })
+                    obj.box.BackgroundTransparency = 0
+                else
+                    obj.box.BackgroundTransparency = tr or 0
+                end
+            else
+                obj.box.BackgroundTransparency = 1
+            end
+
+            if outCfg.Enabled and (not obj.boxOutline or not obj.boxBorder) then
+                if not obj.boxOutline then
+                    obj.boxOutline = Instance.new("UIStroke", obj.box)
+                    obj.boxOutline.Name = "outline"
+                    obj.boxOutline.LineJoinMode = Enum.LineJoinMode.Miter
+                    obj.boxOutline.ZIndex = 2
+                end
+                if not obj.boxBorder then
+                    obj.boxBorder = Instance.new("UIStroke", obj.box)
+                    obj.boxBorder.Name = "border"
+                    obj.boxBorder.LineJoinMode = Enum.LineJoinMode.Miter
+                    obj.boxBorder.ZIndex = 1
+                    obj.boxBorder.BorderOffset = UDim.new(0, -1)
+                    obj.boxBorder.Color = Color3.new(0, 0, 0)
+                    obj.boxBorder.Thickness = 3
+                end
+            end
+            if obj.boxOutline then
+                obj.boxOutline.Thickness = outCfg.Thickness or 1
+            end
+
+            local cornerSig = string.format("%s|%s|%s|%s", tostring(outCfg.Enabled), tostring(outCfg.Thickness), tostring(outCfg.CornerLength), tostring(outCfg.Color))
+            if not obj.cornerFrames then
+                obj.cornerFrames = {}
+            end
+            if outCfg.Enabled and (obj._cornerSig ~= cornerSig) then
+                for i = 1, #obj.cornerFrames do
+                    pcall(function() obj.cornerFrames[i]:Destroy() end)
+                end
+                obj.cornerFrames = buildCorners(obj.holder, outCfg.Thickness or 1, outCfg.CornerLength or 12, outCfg.Color or Color3.new(1, 1, 1), Color3.new(0, 0, 0))
+                obj._cornerSig = cornerSig
+            end
+
+            if glowCfg.Enabled and not obj.glow then
+                obj.glow = Instance.new("ImageLabel", obj.box)
+                obj.glow.Name = ""
+                obj.glow.BackgroundTransparency = 1
+                obj.glow.ZIndex = 1
+                obj.glow.Size = UDim2.new(1, 45, 1, 45)
+                obj.glow.Position = UDim2.new(0, -23, 0, -23)
+                obj.glow.ScaleType = Enum.ScaleType.Slice
+                obj.glow.SliceCenter = Rect.new(21, 21, 79, 79)
+            end
+            if obj.glow then
+                obj.glow.Image = glowCfg.Image or "rbxassetid://90231585382483"
+                obj.glow.ImageTransparency = glowCfg.Transparency or 0
+                obj.glow.ImageColor3 = glowCfg.Color or Color3.new(1, 1, 1)
+            end
+
+            if glowCfg.Enabled and glowCfg.Gradient and glowCfg.Gradient.Enabled then
+                if not obj.glowGradient and obj.glow then
+                    obj.glowGradient = Instance.new("UIGradient", obj.glow)
+                end
+                if obj.glowGradient then
+                    local seq = {}
+                    local colors = glowCfg.Gradient.Color or {Color3.new(1, 1, 1), Color3.new(0.8, 0.8, 1)}
+                    for i, c in ipairs(colors) do
+                        table.insert(seq, ColorSequenceKeypoint.new((i - 1) / math.max(#colors - 1, 1), c))
+                    end
+                    obj.glowGradient.Color = ColorSequence.new(seq)
+                    obj.glowGradient.Rotation = glowCfg.Gradient.Rotation or 0
+                end
+            elseif obj.glowGradient then
+                obj.glowGradient:Destroy()
+                obj.glowGradient = nil
+            end
 
             if fullUpdate then
                 obj.lastUpdate = now
